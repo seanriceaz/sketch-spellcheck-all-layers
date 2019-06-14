@@ -1,36 +1,35 @@
 @import 'sketch-nibui.js';
 
 function onRun(context) {
-  var doc = context.document;
+  // const doc = context.document;
+  const Document = require('sketch/dom').Document;
+  const Page = Document.selectedPage;
   var UI = require('sketch/ui');
 
-  // Filter layers using NSPredicate
-	var scope = (typeof containerLayer !== 'undefined') ? [containerLayer children] : [[doc currentPage] children],
-		predicate = NSPredicate.predicateWithFormat("(className == %@)", "MSTextLayer"),
-		layers = [scope filteredArrayUsingPredicate:predicate]
+  // Get all the text layers on the page
+  const layers = Page.Layers.filter(layer => layer.text !== "undefined");
+  const symbols = Page.Layers.filter(layer => layer.overrides !== "undefined").
 
 	// Loop through filtered layers and select them
 	var loop = [layers objectEnumerator], layer;
   var misspellingcount = 0;
   var stopChecking = false;
-  while (layer = [loop nextObject]) {
-    if(stopChecking){
-      break; //If the user hits "Done", stop checking
-    }
+  for (i = 0; i < layers.count(); i++) {
+    layer = layers[i];
 
     //do spellcheck on each layer
-    var aString = [layer stringValue]
+    var aString = layer.text;
+    Document.centerOnLayer(layer);
     var spellingResult = spellcheckThis(aString, context);
     //Do text replacement if we updated anything
     if (spellingResult.madeAChange){
-      //Select the layer just for display purposes
-      [layer select:true byExpandingSelection:false]
       //Actually make the changes
-      layer.setIsEditingText(true);
-      layer.setStringValue(spellingResult.corrected);
-      layer.setIsEditingText(false);
+      layer.text = spellingResult.corrected;
     }
     stopChecking = spellingResult.stopChecking;
+    if(stopChecking){
+      i=layers.count();
+    }
     misspellingcount = misspellingcount + spellingResult.misspellingcount;
 
   }
@@ -41,8 +40,8 @@ function onRun(context) {
     // return(value.id);
     //});
     //console.log(pageLayerIDs);
-    for (var i = 0; i < allSymbols.count(); i++) {
-      var symbol = allSymbols[i];
+    for (var k = 0; k < allSymbols.count(); k++) {
+      var symbol = allSymbols[k];
       var instances = symbol.allInstances()
       //Won't work until we convert to the full-javascript API.
       //var instances = symbol.allInstances().filter(
@@ -70,7 +69,7 @@ function onRun(context) {
               misspellingcount = misspellingcount + spellingResult.misspellingcount;
               if(stopChecking){
                 //If the user hits "Done", stop checking--set all the for variables to their exit conditions
-                i=allSymbols.count();
+                k=allSymbols.count();
                 j=instances.count();
                 l=mutableOverrides.allKeys().count();
               }
