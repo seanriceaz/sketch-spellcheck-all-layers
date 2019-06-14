@@ -11,7 +11,6 @@ function onRun(context) {
   const symbols = Page.Layers.filter(layer => layer.overrides !== "undefined").
 
 	// Loop through filtered layers and select them
-	var loop = [layers objectEnumerator], layer;
   var misspellingcount = 0;
   var stopChecking = false;
   for (i = 0; i < layers.count(); i++) {
